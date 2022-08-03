@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using WebApiFirst.DAL;
+using WebApiFirst.DTOs;
 using WebApiFirst.Models;
 
 namespace WebApiFirst.Controllers
@@ -41,9 +42,17 @@ namespace WebApiFirst.Controllers
         }
 
         [HttpPost("create")]
-        public IActionResult CreateComp(Computer computer)
+        public IActionResult CreateComp(ComputerPostDto computerPostDto)
         {
-            if (computer == null) return NotFound();
+            if (computerPostDto == null) return NotFound();
+            Computer computer = new Computer
+            {
+                Brand = computerPostDto.Brand,
+                Name = computerPostDto.Name,
+                Price = computerPostDto.Price,
+                Quality = computerPostDto.Quality,
+                Quantity = computerPostDto.Quantity,
+            };
             _context.Computers.Add(computer);
             _context.SaveChanges();
             return StatusCode(201, computer);
@@ -51,7 +60,7 @@ namespace WebApiFirst.Controllers
 
 
         [HttpPut("edit/{id}")]
-        public IActionResult Edit(int id, Computer computer)
+        public IActionResult Edit(int id, ComputerPostDto computerPostDto)
         {
             if (id == 0) return NotFound();
             Computer current = _context.Computers.FirstOrDefault(c => c.Id == id);
@@ -59,13 +68,14 @@ namespace WebApiFirst.Controllers
             {
                 return StatusCode(StatusCodes.Status404NotFound);
             }
-            current.Name = computer.Name;
-            current.Brand = computer.Brand;
-            current.Price = computer.Price;
-            current.Quality = computer.Quality;
-            current.Quantity = computer.Quantity;
+            _context.Entry(current).CurrentValues.SetValues(computerPostDto);
+            //current.Name = computer.Name;
+            //current.Brand = computer.Brand;
+            //current.Price = computer.Price;
+            //current.Quality = computer.Quality;
+            //current.Quantity = computer.Quantity;
             _context.SaveChanges();
-            return NoContent();
+            return StatusCode(200,computerPostDto);
         }
 
 
